@@ -4,6 +4,32 @@ var width = 600 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
 
+	var none = 0;
+	var year = 1981;
+	var total = [ 
+	{
+		"surface": "clay",
+		"count": 0,
+		"tournaments": []
+	},
+	{	
+		"surface": "grass",
+		"count": 0,
+		"tournaments": []
+	},
+	{
+		"surface": "hard",
+		"count": 0,
+		"tournaments": []
+	},
+	{	
+		"surface": "carpet",
+		"count": 0,
+		"tournaments": []
+	}
+	]
+
+
   var g = d3.select("#chart-area")
     .append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -20,92 +46,69 @@ g.append("text")
 	.attr("y", height + 40)
 	.attr("font-size", "20px")
 	.attr("text-anchor", "middle")
-	.text("Tennis matches per surface (1986) ");
+	.text(`Tennis matches per surface ${year} `);
 
 
-var clay = 0; //"Clay"
-var grass = 0; // "Grass"
-var carpet = 0; //"Carpet"
-var hard = 0; //"Hard"
-var none = 0;
-var total = [ 
-{
-	"surface": "clay",
-	"count": 0
-},
-{	
-	"surface": "grass",
-	"count": 0
-},
-{
-	"surface": "hard",
-	"count": 0
-},
-{	
-	"surface": "carpet",
-	"count": 0
-}
-]
 // var surfaces = [clay, grass, hard, carpet];
 
 // ladies in 1986
-// d3.csv("wta_1986.csv", function(data){
+// d3.csv("wta_${year}.csv", function(data){
 // 	console.log(data);
 
-d3.json("1985.json", function(data){
+// d3.csv(`./tennis_wta/wta_matches_${year}.csv`, function(data){
+d3.csv(`./tennis_atp/atp_matches_${year}.csv`, function(data){
 
-	console.log(data);
+	//console.log(data);
 // players from that year
 // winners winner_name then loser_name
 const grouped = data.reduce((groups, cur) => {
-	const key = cur.winner_rank;
+	const key = cur.tourney_name;
+	//this.surface = cur.surface;
 
 	groups[key] = (groups[key] || 0) + 1;
 
 	return groups;
 }, {});
 
-const result = Object.keys(grouped).map(key => ({name: key, count: grouped[key]}));
+const result = Object.keys(grouped).map(key => ( {name: key, count: grouped[key]} ));
 
-//result.sort(function(a, b) {return b - a});
-	
-console.log(result);
 
-// function sortProperties(obj)
-// {
-//   // convert object into array
-// 	var sortable=[];
-// 	for(var key in obj)
-// 		if(obj.hasOwnProperty(key))
-// 			sortable.push([key, obj[key]]); // each item is an array in format [key, value]
-	
-// 	// sort items by value
-// 	sortable.sort(function(a, b)
-// 	{
-// 	  return a[1]-b[1]; // compare numbers
-// 	});
-// 	console.log(sortable);
-// 	return sortable; // array in format [ [ key1, val1 ], [ key2, val2 ], ... ]
-	
-// }
 
-// sortProperties(result);
+// players with more than 20 wins
+var newArray = result.filter(function (el) {
+	return el.count >= 20
+});
+console.log(newArray);
+newArray.sort(function(a, b){
+	return b.count - a.count
+});
+console.log(newArray);
 
-//men in 1985
-// d3.json("1985.json", function(data){
-// 	console.log(data);
 
+// sorting info for bar charts by surface and tournament surface type
 for (var i = 0; i < data.length; i++) {
 	if(data[i].surface === " ")
 		none++;
-		else if(data[i].surface === "Clay")
+		else if(data[i].surface === "Clay"){
 		total[0].count++;
-		else if(data[i].surface === "Grass")
-		total[1].count++;
-		else if (data[i].surface === "Hard")
-		total[2].count++;
-		else if (data[i].surface === "Carpet")
-		total[3].count++;
+			if(!total[0].tournaments.includes(data[i].tourney_name)){
+		total[0].tournaments.push(data[i].tourney_name)
+			}}
+		else if(data[i].surface === "Grass"){
+			total[1].count++;
+				if(!total[1].tournaments.includes(data[i].tourney_name)){
+			total[1].tournaments.push(data[i].tourney_name)
+				}}
+		else if (data[i].surface === "Hard"){
+			total[2].count++;
+				if(!total[2].tournaments.includes(data[i].tourney_name)){
+			total[2].tournaments.push(data[i].tourney_name)
+				}}
+		else if (data[i].surface === "Carpet"){
+			total[3].count++;
+				if(!total[3].tournaments.includes(data[i].tourney_name)){
+			total[3].tournaments.push(data[i].tourney_name)
+				}}
 		
  }
 
@@ -160,30 +163,4 @@ rects.enter()
 	.attr("fill", function(d, i) { return colorScale(i); });
 
 });
-	// const surface = data.map(function(surface){
-	// 	clay += surface.Clay;
-	// 	grass += surface.Grass;
-	// 	carpet += surface.Carpet;
-	// 	hard += surface.Hard;
-
-	// });
-
-// var x = d3.scaleBand()
-// 	.domain(surfaces.map(function(d) {return surfaces}))
-// 	.range([0, width])
-// 	.paddingInner(0.3)
-// 	paddingOuter(0.3);
-
-// var y = d3.scaleLinear()
-// 	.domain([0, total]);
-// 	.range([height, 0]);
-
-// d3.select("svg")
-// 	.attr("width", width)
-// 	.attr("height", height)
-// .selectAll("rects")
-// 	.data(data)
-// 	.append("rects")
-// 	.attr("y", function(d) return)
-
-// })
+	
