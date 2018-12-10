@@ -5,7 +5,7 @@ var width = 600 - margin.left - margin.right,
 
 
 	var none = 0;
-	var year = 1981;
+	var year = 1989;
 	var total = [ 
 	{
 		"surface": "clay",
@@ -30,23 +30,25 @@ var width = 600 - margin.left - margin.right,
 	]
 
 
-  var g = d3.select("#chart-area")
-    .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform", "translate(" + margin.left 
-            + ", " + margin.top + ")");  
-
-
+var g = d3.select("#chart-area")
+		.append("svg")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+			.attr("transform", "translate(" + margin.left 
+				+ ", " + margin.top + ")");  
+	
+	
 //X Label
-g.append("text")
-	.attr("class", "x axis-label")
-	.attr("x", width / 2)
-	.attr("y", height + 40)
-	.attr("font-size", "20px")
-	.attr("text-anchor", "middle")
-	.text(`Tennis matches per surface ${year} `);
+var yearLabel = g.append("text")
+.attr("class", "x axis-label")
+.attr("x", width / 2)
+.attr("y", height + 40)
+.attr("font-size", "20px")
+.attr("text-anchor", "middle")
+.text(`Tennis matches per surface ${year} `);
+
+
 
 
 // var surfaces = [clay, grass, hard, carpet];
@@ -56,8 +58,22 @@ g.append("text")
 // 	console.log(data);
 
 // d3.csv(`./tennis_wta/wta_matches_${year}.csv`, function(data){
-d3.csv(`./tennis_atp/atp_matches_${year}.csv`, function(data){
 
+
+	d3.interval(function(){
+		
+	update()
+	}, 1000);
+
+
+
+function update() {
+	d3.csv(`./tennis_atp/atp_matches_${year}.csv`, function(data){	
+	if (year === 1990){
+	     year = 1980;
+    }
+	else 
+	   year++; 
 	//console.log(data);
 // players from that year
 // winners winner_name then loser_name
@@ -112,6 +128,11 @@ for (var i = 0; i < data.length; i++) {
 		
  }
 
+ 
+
+
+
+
 var x = d3.scaleBand()
 	.domain(total.map(function(d){
 		return d.surface;
@@ -127,6 +148,7 @@ var y = d3.scaleLinear()
 	.range([height, 0]);
 
   var xAxisCall = d3.axisBottom(x);
+
     g.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0, " + height + ")")
@@ -143,14 +165,24 @@ var colorScale = d3.scaleOrdinal()
 	.range(["#ff6927", "#00d844", "#0297DB", "#B05F5C"]);
 
 
-var svg = d3.select("#chart-area")
-	.append("svg")
-	.attr("width", width)
-	.attr("height", height);
 
+
+//data join
 var rects = g.selectAll("rect")
 	.data(total)
 
+
+//update
+rects
+.attr("y", function(d){ return y(d.count); })
+.attr("x", function(d){
+	return x(d.surface);
+})
+.attr("width", x.bandwidth)
+.attr("height", function(d){
+	return height -  y(d.count)}) 
+
+//ENTER
 rects.enter()
 	.append("rect")
 	.attr("y", function(d){ return y(d.count); })
@@ -160,7 +192,11 @@ rects.enter()
 	.attr("width", x.bandwidth)
 	.attr("height", function(d){
 		return height -  y(d.count)})
-	.attr("fill", function(d, i) { return colorScale(i); });
+	.attr("fill", function(d, i) { return colorScale(i); })
+	// .transition(d3.transition().duration(500)) 
+	// 	.attr()
+//exit
+rects.exit.remove();
 
-});
-	
+});	
+}
